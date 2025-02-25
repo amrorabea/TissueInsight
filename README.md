@@ -37,19 +37,21 @@ TissueInsight/
 
 1. Clone the Repository:
 ```bash
-$ git clone https://github.com/amrorabea/TissueInsight.git
-$ cd TissueInsight
+ git clone https://github.com/amrorabea/TissueInsight.git
 ```
-
+```bash
+ cd TissueInsight
+```
 2. Create a Virtual Environment (Optional but Recommended):
 ```bash
-$ python -m venv venv
-$ source venv/bin/activate  # On Windows use: venv\Scripts\activate
+python -m venv venv
 ```
-
+```bash
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+```
 3. Install Dependencies:
 ```bash
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 
