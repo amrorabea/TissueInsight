@@ -1,10 +1,10 @@
-HVG/
-crop/
+all_genes/
 check_all_image/
-Visium/
 combined_hvg/
+crop/
+HVG/
 overlap-genes/
 overlap-hvg/
 overlap-tissue/
-all_genes/
 slides/
+Visium/
