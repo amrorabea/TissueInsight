@@ -2,3 +2,9 @@ HVG/
 crop/
 check_all_image/
 Visium/
+combined_hvg/
+overlap-genes/
+overlap-hvg/
+overlap-tissue/
+all_genes/
+slides/
