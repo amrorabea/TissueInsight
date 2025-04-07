@@ -8,13 +8,14 @@ import plotly.graph_objects as go
 from scipy.stats import mannwhitneyu
 import umap
 from sklearn.decomposition import PCA
+import os
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 
 # Load data
 @st.cache_data
 def load_data():
-    data = pd.read_csv("brain_count_overlap_hvg_labeled.csv")
+    data = pd.read_csv(os.path.join(os.path.dirname(__file__), "brain_count_overlap_hvg_labeled.csv"))
     # data['involve_cancer'] = data['involve_cancer'].astype(str)  # Ensure consistent labels
     return data
 
