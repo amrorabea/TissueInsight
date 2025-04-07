@@ -111,7 +111,7 @@ def plot_gene_expression_histogram(df):
     plt.title("Distribution of Gene Expression Across Samples by Cancer Status")
     plt.xlabel("Total Gene Expression")
     plt.ylabel("Frequency")
-    plt.legend(title="Cancer Status", labels=["Cancerous", "Non-Cancerous"])
+    plt.legend(title="Cancer Status", labels=["Non-Cancerous", "Cancerous"])
     st.pyplot(plt)
 
 
@@ -143,10 +143,32 @@ def main_page():
         height=400
     )
     st.plotly_chart(fig, use_container_width=True)
+    with st.expander("ℹ️ View Detailed Description"):
+        st.markdown("""
+        ### Description
+        The bar chart titled **"Cancer Status Distribution"** visualizes the distribution of samples based on their cancer status. There are two categories:
+        - **Category 0 (Non-Cancerous)**: Represented by a lighter red bar, this category has a count of **9,703** samples. It indicates the number of samples that are not associated with cancer.
+        - **Category 1 (Cancerous)**: Represented by a darker red bar, this category has a count of **12,560** samples. It indicates the number of samples that are associated with cancer.
+        The chart shows that there are more cancerous samples (**12.56K**) compared to non-cancerous samples (**9.703K**) in the dataset. This distribution is important for understanding the balance of classes in the dataset, which can impact the analysis and modeling processes.
+        """)
+    st.markdown("---")
 
     # Cancer Histogram Section
     st.markdown("## 🩺 Cancer Histogram")
     plot_gene_expression_histogram(df)
+    
+    with st.expander("ℹ️ View Detailed Description"):
+        st.markdown("""
+        ### Description
+        The **"Cancer Histogram"** visualizes the distribution of total gene expression across samples, categorized by cancer status.
+
+        - **Cancerous Samples**: Shown in orange, these samples have a distinct distribution pattern, indicating higher gene expression levels in some cases.
+
+        - **Non-Cancerous Samples**: Shown in blue, these samples generally exhibit lower gene expression levels compared to cancerous samples.
+
+        ### Conclusion
+        The histogram reveals that cancerous samples tend to have higher gene expression levels, suggesting potential biomarkers for cancer detection. This difference in distribution highlights the importance of gene expression analysis in understanding cancer biology and developing diagnostic tools.
+        """)
     st.markdown("---")
 
     # Gene Distribution Section
@@ -172,6 +194,18 @@ def main_page():
     sns.heatmap(df[top_corr_genes].corr(), cmap='coolwarm', center=0, annot=False, cbar_kws={'shrink': 0.8})
     plt.title("Correlation Heatmap (Top 20 Genes)", fontsize=16)
     st.pyplot(fig)
+    with st.expander("ℹ️ View Detailed Description"):
+        st.markdown("""
+        ### Description
+        The **"Correlation Heatmap"** displays the correlation between the top 20 genes and their relationship with cancer involvement.
+
+        - **Color Scale**: The heatmap uses a color scale from blue (negative correlation) to red (positive correlation). Darker colors indicate stronger correlations.
+
+        - **Diagonal**: The diagonal represents perfect correlation (1.0) of each gene with itself.
+
+        ### Conclusion
+        This heatmap helps identify genes that have strong correlations with cancer involvement. Genes with high positive or negative correlations may be significant in understanding cancer mechanisms and could serve as potential targets for further research.
+        """)
     st.markdown("---")
 
     # Outlier Analysis Section
@@ -242,6 +276,22 @@ def main_page():
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    with st.expander("ℹ️ View Detailed Description"):
+        st.markdown("""
+        ### Description
+        The **"Volcano Plot"** visualizes the differential expression of genes, highlighting both the magnitude and significance of changes.
+
+        - **X-axis (Log2 Fold Change)**: Represents the magnitude of change in gene expression. Points to the left indicate downregulation, while points to the right indicate upregulation.
+
+        - **Y-axis (-Log10 P-value)**: Represents the statistical significance of the change. Higher values indicate greater significance.
+
+        - **Color Coding**: 
+        - **Red Dots**: Significant genes with both high fold change and high significance.
+        - **Gray Dots**: Non-significant genes.
+
+        ### Conclusion
+        The volcano plot helps identify genes that are both significantly and substantially differentially expressed. These genes are potential candidates for further investigation, as they may play crucial roles in the biological processes being studied.
+        """)
     st.markdown("---")
 
     # Clustering Visualizations Section
@@ -257,7 +307,7 @@ def main_page():
     with col1:
         cluster_option = st.selectbox(
             "Choose a Clustering Technique:",
-            ["UMAP", "t-SNE", "PCA", "KMeans"]
+            ["PCA", "t-SNE", "UMAP", "KMeans"]
         )
         
         if cluster_option == "KMeans":
