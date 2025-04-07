@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 # Load data
 @st.cache_data
 def load_data():
-    data = pd.read_csv(r"../data/preprocessed_genes/all_genes/brain_count_overlap_hvg_labeled.csv")
+    data = pd.read_csv("brain_count_overlap_hvg_labeled.csv")
     # data['involve_cancer'] = data['involve_cancer'].astype(str)  # Ensure consistent labels
     return data
 
