@@ -10,13 +10,12 @@ import umap
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
-import scipy.stats as stats
 
 # Load data
 @st.cache_data
 def load_data():
     data = pd.read_csv("../data/preprocessed_genes/all_genes/brain_count_overlap_hvg_labeled.csv")
-    data['involve_cancer'] = data['involve_cancer'].astype(str)  # Ensure consistent labels
+    # data['involve_cancer'] = data['involve_cancer'].astype(str)  # Ensure consistent labels
     return data
 
 df = load_data()
@@ -122,116 +121,149 @@ def main_page():
     st.markdown("This dashboard visualizes the **gene expression data** for cancer prediction.")
 
     # Overview Section
-    with st.expander("📋 Data Overview"):
+    col1, col2 = st.columns([1, 3])
+    with col1:
         st.info(f"**Dataset Shape:** {df.shape}")
+    with col2:
         st.write(df.head())
 
     # Cancer Status Distribution Section
-    with st.expander("🩺 Cancer Status Distribution"):
-        st.write("### Cancer Status Distribution")
-        fig = px.histogram(
-            df, 
-            x='involve_cancer', 
-            color='involve_cancer', 
-            color_discrete_map={'True': '#FF4B4B', 'False': '#4CAF50'},
-            title='Cancer Status Distribution'
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    st.markdown("## Cancer Status Distribution")
+    fig = px.histogram(
+        df, 
+        x='involve_cancer', 
+        color='involve_cancer', 
+        color_discrete_map={'True': '#FF4B4B', 'False': '#4CAF50'},
+        title='Cancer Status Distribution'
+    )
+    fig.update_layout(
+        xaxis_title="Cancer Status",
+        yaxis_title="Count",
+        legend_title="Cancer Status",
+        height=400
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-    # Cancer Status Distribution Section
-    with st.expander("🩺 Cancer Histogram"):
-        st.write("### Cancer Histogram")
-        plot_gene_expression_histogram(df)
+    # Cancer Histogram Section
+    st.markdown("## 🩺 Cancer Histogram")
+    plot_gene_expression_histogram(df)
+    st.markdown("---")
 
     # Gene Distribution Section
-    with st.expander("📈 Gene Distributions"):
-        st.write("### KDE Plots for Gene Distribution")
-        selected_genes = st.multiselect(
-            "Select Genes for KDE Plots", 
-            df.columns[:-1], 
-            default=["0.1", "1", "2"]
-        )
-        if selected_genes:
-            sampled_df = df[selected_genes].sample(500).reset_index()
-            fig = px.line(sampled_df, x='index', y=selected_genes,
-                            labels={'value': 'Gene Expression'},
-                            title='KDE Plot of Selected Genes')
-            st.plotly_chart(fig)
-
+    st.markdown("## 📈 Gene Distributions")
+    selected_genes = st.multiselect(
+        "Select Genes for KDE Plots", 
+        df.columns[:-1], 
+        default=["0.1", "1", "2"]
+    )
+    if selected_genes:
+        sampled_df = df[selected_genes].sample(500).reset_index()
+        fig = px.line(sampled_df, x='index', y=selected_genes,
+                    labels={'value': 'Gene Expression'},
+                    title='KDE Plot of Selected Genes')
+        fig.update_layout(height=450)
+        st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
     # Correlation Heatmap
-    with st.expander("🌡️ Correlation Heatmap"):
-        st.write("### 🌡️ Correlation Heatmap (Top 20 Genes)")
-        top_corr_genes = df.select_dtypes(include=[np.number]).corr()['involve_cancer'].abs().nlargest(21).index
-        fig, ax = plt.subplots(figsize=(12, 8))
-        sns.heatmap(df[top_corr_genes].corr(), cmap='coolwarm', center=0, annot=False, cbar_kws={'shrink': 0.8})
-        st.pyplot(fig)
+    st.markdown("## 🌡️ Correlation Heatmap")
+    top_corr_genes = df.select_dtypes(include=[np.number]).corr()['involve_cancer'].abs().nlargest(21).index
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sns.heatmap(df[top_corr_genes].corr(), cmap='coolwarm', center=0, annot=False, cbar_kws={'shrink': 0.8})
+    plt.title("Correlation Heatmap (Top 20 Genes)", fontsize=16)
+    st.pyplot(fig)
+    st.markdown("---")
 
     # Outlier Analysis Section
-    with st.expander("📦 Outlier Analysis"):
-        st.write("### Boxplots for Outlier Detection")
+    st.markdown("## 📦 Outlier Analysis")
+    col1, col2 = st.columns([1, 3])
+    with col1:
         selected_gene = st.selectbox("📋 Select a Gene for Boxplot", df.select_dtypes(include=[np.number]).columns[:-1])
+    with col2:
         fig = px.box(df, x='involve_cancer', y=selected_gene, color='involve_cancer')
-        st.plotly_chart(fig)
+        fig.update_layout(
+            title=f"Boxplot for {selected_gene}",
+            xaxis_title="Cancer Status",
+            yaxis_title="Expression Value",
+            height=400
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
     # Volcano Plot
-    with st.expander("🌡️ Volcano Plot"):
-        st.write("### 🌋 Volcano Plot - Gene Expression Analysis")
-        p_values, fold_changes = [], []
-        genes = df.select_dtypes(include=[np.number]).columns[:-1]
+    st.markdown("## 🌋 Volcano Plot - Gene Expression Analysis")
+    p_values, fold_changes = [], []
+    genes = df.select_dtypes(include=[np.number]).columns[:-1]
 
-        for gene in genes:
-            cancer_values = df[df['involve_cancer'] == 1][gene]
-            non_cancer_values = df[df['involve_cancer'] == 0][gene]
-            _, p = mannwhitneyu(cancer_values, non_cancer_values, alternative='two-sided')
-            p_values.append(p)
-            fold_changes.append(np.log2(cancer_values.mean() / non_cancer_values.mean()))
+    for gene in genes:
+        cancer_values = df[df['involve_cancer'] == 1][gene]
+        non_cancer_values = df[df['involve_cancer'] == 0][gene]
+        _, p = mannwhitneyu(cancer_values, non_cancer_values, alternative='two-sided')
+        p_values.append(p)
+        fold_changes.append(np.log2(cancer_values.mean() / non_cancer_values.mean()))
 
-        volcano_df = pd.DataFrame({
-            'Gene': genes,
-            'p_value': p_values,
-            'log_p_value': -np.log10(p_values),
-            'log2_fold_change': fold_changes
-        })
+    volcano_df = pd.DataFrame({
+        'Gene': genes,
+        'p_value': p_values,
+        'log_p_value': -np.log10(p_values),
+        'log2_fold_change': fold_changes
+    })
 
-        fig = go.Figure()
-        significant_genes = volcano_df[(volcano_df['p_value'] < 0.05) & (abs(volcano_df['log2_fold_change']) > 1)]
-        non_significant_genes = volcano_df[~volcano_df.index.isin(significant_genes.index)]
+    fig = go.Figure()
+    significant_genes = volcano_df[(volcano_df['p_value'] < 0.05) & (abs(volcano_df['log2_fold_change']) > 1)]
+    non_significant_genes = volcano_df[~volcano_df.index.isin(significant_genes.index)]
 
-        fig.add_trace(go.Scatter(x=non_significant_genes['log2_fold_change'],
-                                    y=non_significant_genes['log_p_value'],
-                                    mode='markers',
-                                    marker=dict(color='gray', size=6),
-                                    name='Non-significant'))
+    fig.add_trace(go.Scatter(
+        x=non_significant_genes['log2_fold_change'],
+        y=non_significant_genes['log_p_value'],
+        mode='markers',
+        marker=dict(color='gray', size=6),
+        name='Non-significant',
+        text=non_significant_genes['Gene'],  # Add gene names for hover text
+        hoverinfo='text'
+    ))
 
-        fig.add_trace(go.Scatter(x=significant_genes['log2_fold_change'],
-                                    y=significant_genes['log_p_value'],
-                                    mode='markers',
-                                    marker=dict(color='red', size=8),
-                                    name='Significant Genes'))
+    fig.add_trace(go.Scatter(
+        x=significant_genes['log2_fold_change'],
+        y=significant_genes['log_p_value'],
+        mode='markers',
+        marker=dict(color='red', size=8),
+        name='Significant Genes',
+        text=significant_genes['Gene'],  # Add gene names for hover text
+        hoverinfo='text'
+    ))
 
-        fig.update_layout(title='Volcano Plot - Gene Expression Analysis',
-                            xaxis_title='Log2 Fold Change',
-                            yaxis_title='-Log10 p-value',
-                            template='plotly_white')
+    fig.update_layout(
+        title='Volcano Plot - Gene Expression Analysis',
+        xaxis_title='Log2 Fold Change',
+        yaxis_title='-Log10 p-value',
+        template='plotly_white',
+        height=500
+    )
 
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
     # Clustering Visualizations Section
-    with st.expander("🧩 Clustering Visualizations"):
-        st.write("### Select Clustering Visualization")
+    st.markdown("## 🧩 Clustering Visualizations")
 
-        pca = PCA(n_components=2)
-        pca_result = pca.fit_transform(df.select_dtypes(include=[np.number]))
+    pca = PCA(n_components=2)
+    pca_result = pca.fit_transform(df.select_dtypes(include=[np.number]))
 
-        df['PCA_1'] = pca_result[:, 0]
-        df['PCA_2'] = pca_result[:, 1]
+    df['PCA_1'] = pca_result[:, 0]
+    df['PCA_2'] = pca_result[:, 1]
 
+    col1, col2 = st.columns([1, 3])
+    with col1:
         cluster_option = st.selectbox(
             "Choose a Clustering Technique:",
             ["UMAP", "t-SNE", "PCA", "KMeans"]
         )
-
+        
+        if cluster_option == "KMeans":
+            n_clusters = st.slider("Select Number of Clusters", min_value=2, max_value=10, value=3)
+    
+    with col2:
         if cluster_option == "UMAP":
             st.plotly_chart(plot_umap(df.select_dtypes(include=[np.number])), use_container_width=True)
         elif cluster_option == "t-SNE":
@@ -239,7 +271,6 @@ def main_page():
         elif cluster_option == "PCA":
             st.plotly_chart(plot_pca(df.select_dtypes(include=[np.number])), use_container_width=True)
         elif cluster_option == "KMeans":
-            n_clusters = st.slider("Select Number of Clusters", min_value=2, max_value=10, value=3)
             st.plotly_chart(plot_kmeans(df.select_dtypes(include=[np.number]), n_clusters), use_container_width=True)
 
 
