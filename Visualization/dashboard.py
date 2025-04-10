@@ -19,7 +19,9 @@ import plotly.graph_objects as go
 @st.cache_data
 def load_data():
     data = pd.read_csv(os.path.join(os.path.dirname(__file__), "brain_count_overlap_hvg_labeled.csv"))
-    meta = pd.read_csv("../data/meta_all_gene.csv")
+
+    meta_path = os.path.join(os.path.dirname(__file__), "../data/meta_all_gene.csv")
+    meta = pd.read_csv(meta_path)
     # data['involve_cancer'] = data['involve_cancer'].astype(str)  # Ensure consistent labels
     return data , meta
 
